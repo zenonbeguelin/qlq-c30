@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>QLQ-C30 · Seguimiento Oncológico</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Palatino Linotype','Book Antiqua',Palatino,serif;background:#1B4D3E;min-height:100vh;}
+  button{cursor:pointer;font-family:inherit;}
+  input,select{font-family:inherit;}
+  .screen{display:none;}
+  .screen.active{display:flex;}
+</style>
+</head>
+<body>
+
+<!-- ═══ SCREEN: LOADING ═══ -->
+<div id="screen-loading" class="screen active" style="min-height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+  <div style="font-size:40px;">🌿</div>
+  <p style="color:#A8C5BC;font-size:16px;">Conectando…</p>
+</div>
+
+<!-- ═══ SCREEN: HOME ═══ -->
+<div id="screen-home" class="screen" style="min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:28px;background:#1B4D3E;">
+  <div style="width:68px;height:68px;border-radius:50%;background:#C5703A;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px;">🩺</div>
+  <h1 style="color:#fff;font-size:26px;text-align:center;font-weight:normal;margin-bottom:4px;">QLQ-C30</h1>
+  <p style="color:#A8C5BC;font-size:14px;text-align:center;margin-bottom:36px;">Seguimiento de calidad de vida · 180 días</p>
+  <div style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px;">
+    <div style="background:rgba(255,255,255,0.08);border-radius:16px;padding:20px;">
+      <p style="color:#fff;font-size:16px;margin-bottom:12px;">Soy paciente</p>
+      <select id="home-patient-select" style="width:100%;background:#1B4D3E;border:1px solid #2A6050;border-radius:8px;padding:10px 12px;color:#6A9A8A;font-size:14px;margin-bottom:10px;">
+        <option value="">Seleccioná tu nombre…</option>
+      </select>
+      <p id="home-error" style="color:#FF9090;font-size:13px;margin-bottom:8px;display:none;">Seleccioná tu nombre de la lista</p>
+      <button onclick="startPatient()" style="width:100%;background:#C5703A;color:#fff;border:none;border-radius:10px;padding:12px;font-size:15px;">Completar cuestionario →</button>
+    </div>
+    <div style="background:rgba(255,255,255,0.05);border-radius:16px;padding:20px;">
+      <p style="color:#fff;font-size:16px;margin-bottom:12px;">Soy médico/a</p>
+      <button onclick="showScreen('screen-doctor-login')" style="width:100%;background:transparent;color:#A8C5BC;border:1px solid #3A6A5A;border-radius:10px;padding:12px;font-size:15px;">Ver panel médico →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: DOCTOR LOGIN ═══ -->
+<div id="screen-doctor-login" class="screen" style="min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:28px;background:#111C18;">
+  <div style="width:60px;height:60px;border-radius:50%;background:#C5703A;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:20px;">🔒</div>
+  <h2 style="color:#fff;font-size:22px;font-weight:normal;margin-bottom:6px;">Panel Médico</h2>
+  <p style="color:#5A8A78;font-size:14px;margin-bottom:28px;">QLQ-C30 · Seguimiento oncológico</p>
+  <input id="doctor-pw" type="password" placeholder="Contraseña" style="width:240px;background:#1A2920;border:1px solid #2A3D34;border-radius:10px;padding:12px 14px;color:#fff;font-size:15px;margin-bottom:10px;text-align:center;outline:none;" onkeydown="if(event.key==='Enter')checkDoctorPw()"/>
+  <p id="doctor-pw-err" style="color:#E07070;font-size:13px;margin-bottom:10px;display:none;">Contraseña incorrecta</p>
+  <button onclick="checkDoctorPw()" style="background:#1B4D3E;color:#fff;border:none;border-radius:10px;padding:12px 32px;font-size:15px;">Ingresar →</button>
+  <p style="color:#3A6A5A;font-size:12px;margin-top:20px;">Contraseña: <span style="color:#A8C5BC;">estudio2024</span></p>
+  <button onclick="showScreen('screen-home')" style="background:transparent;color:#5A8A78;border:none;font-size:13px;margin-top:16px;">← Volver</button>
+</div>
+
+<!-- ═══ SCREEN: DOCTOR DASHBOARD ═══ -->
+<div id="screen-doctor" class="screen" style="min-height:100vh;flex-direction:column;background:#111C18;color:#fff;">
+  <div style="background:#0E1812;padding:16px 22px;border-bottom:1px solid #2A3D34;display:flex;justify-content:space-between;align-items:center;">
+    <div>
+      <h1 style="font-size:18px;font-weight:normal;">Panel Médico — QLQ-C30</h1>
+      <p style="color:#5A8A78;font-size:12px;margin-top:2px;">Seguimiento oncológico · Firebase</p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span style="background:#1A2920;border-radius:8px;padding:6px 12px;font-size:12px;color:#5A8A78;">🟢 Conectado</span>
+      <button onclick="showScreen('screen-home')" style="background:transparent;color:#5A8A78;border:1px solid #2A3D34;border-radius:8px;padding:6px 12px;font-size:12px;">Salir</button>
+    </div>
+  </div>
+  <div style="display:flex;flex:1;min-height:calc(100vh - 60px);">
+    <!-- Sidebar -->
+    <div style="width:220px;background:#0E1812;border-right:1px solid #2A3D34;padding:14px;overflow-y:auto;flex-shrink:0;">
+      <p style="color:#5A8A78;font-size:11px;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Pacientes</p>
+      <div id="patient-list"></div>
+      <div style="margin-top:20px;border-top:1px solid #2A3D34;padding-top:14px;">
+        <input id="new-patient-name" placeholder="Nombre del paciente…" style="width:100%;background:#1A2920;border:1px solid #2A3D34;border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')addPatient()"/>
+        <button onclick="addPatient()" style="width:100%;margin-top:7px;background:#C5703A;border:none;border-radius:8px;padding:9px;color:#fff;font-size:13px;">+ Agregar paciente</button>
+      </div>
+    </div>
+    <!-- Main -->
+    <div id="doctor-main" style="flex:1;overflow-y:auto;padding:22px;">
+      <div style="display:flex;align-items:center;justify-content:center;height:200px;color:#5A8A78;font-size:15px;">← Seleccioná un paciente</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: PATIENT INTRO ═══ -->
+<div id="screen-patient-intro" class="screen" style="min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:28px;background:#1B4D3E;">
+  <div style="width:68px;height:68px;border-radius:50%;background:#C5703A;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px;">🌿</div>
+  <h1 id="intro-name" style="color:#fff;font-size:24px;text-align:center;font-weight:normal;margin-bottom:6px;"></h1>
+  <p style="color:#A8C5BC;font-size:14px;text-align:center;margin-bottom:4px;">Cuestionario de calidad de vida</p>
+  <p id="intro-day" style="color:#A8C5BC;font-size:13px;text-align:center;margin-bottom:32px;"></p>
+  <div style="background:rgba(255,255,255,0.08);border-radius:14px;padding:18px;margin-bottom:32px;max-width:320px;">
+    <p style="color:#fff;font-size:14px;line-height:1.7;">Este cuestionario tiene <strong>30 preguntas</strong> sobre cómo te sentiste durante la <strong>semana pasada</strong>. Toma entre 5 y 8 minutos. No hay respuestas correctas ni incorrectas.</p>
+  </div>
+  <button onclick="showScreen('screen-survey')" style="background:#C5703A;color:#fff;border:none;border-radius:12px;padding:14px 44px;font-size:16px;">Comenzar →</button>
+</div>
+
+<!-- ═══ SCREEN: ALREADY DONE ═══ -->
+<div id="screen-already" class="screen" style="min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:28px;background:#F5F2EC;">
+  <div style="font-size:52px;margin-bottom:16px;">✅</div>
+  <h2 style="color:#1B4D3E;font-size:22px;text-align:center;margin-bottom:8px;">Ya completaste el cuestionario de hoy</h2>
+  <p id="already-day" style="color:#8A9490;text-align:center;font-size:15px;">Volvé mañana para continuar.</p>
+</div>
+
+<!-- ═══ SCREEN: SURVEY ═══ -->
+<div id="screen-survey" class="screen" style="min-height:100vh;flex-direction:column;background:#F5F2EC;">
+  <div style="background:#1B4D3E;padding:14px 18px 10px;position:sticky;top:0;z-index:10;">
+    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+      <span id="survey-day-label" style="color:#A8C5BC;font-size:13px;"></span>
+      <span id="survey-progress-label" style="color:#fff;font-size:13px;"></span>
+    </div>
+    <div style="background:rgba(255,255,255,0.15);border-radius:99px;height:5px;">
+      <div id="survey-progress-bar" style="background:#C5703A;width:0%;height:100%;border-radius:99px;transition:width 0.3s;"></div>
+    </div>
+  </div>
+  <div style="padding:18px 14px;">
+    <p style="color:#8A9490;font-size:13px;text-align:center;margin-bottom:18px;">Durante la <strong>semana pasada</strong>…</p>
+    <div id="questions-container"></div>
+    <button id="submit-btn" onclick="submitSurvey()" disabled style="width:100%;margin-top:20px;background:#DDD8CF;color:#8A9490;border:none;border-radius:14px;padding:16px;font-size:17px;">Faltan preguntas por responder</button>
+  </div>
+</div>
+
+<!-- ═══ SCREEN: DONE ═══ -->
+<div id="screen-done" class="screen" style="min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:28px;background:#1B4D3E;">
+  <div style="font-size:52px;margin-bottom:16px;">🌿</div>
+  <h2 id="done-name" style="color:#fff;font-size:22px;text-align:center;font-weight:normal;margin-bottom:8px;"></h2>
+  <p style="color:#A8C5BC;text-align:center;font-size:15px;margin-bottom:28px;">Tus respuestas fueron guardadas.</p>
+  <div style="background:rgba(255,255,255,0.1);border-radius:14px;padding:16px 32px;text-align:center;">
+    <p style="color:#A8C5BC;font-size:13px;">Progreso total</p>
+    <p id="done-progress" style="color:#fff;font-size:36px;margin-top:4px;font-weight:bold;"></p>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── Firebase config ──
+const firebaseConfig = {
+  apiKey: "AIzaSyDCTxy0b4qxWfMgZj-4-iRfrV97jJGvhAc",
+  authDomain: "qlq-c30-estudio.firebaseapp.com",
+  projectId: "qlq-c30-estudio",
+  storageBucket: "qlq-c30-estudio.firebasestorage.app",
+  messagingSenderId: "1009478054310",
+  appId: "1:1009478054310:web:267bc3367dd2ed0b5d5f67"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ── State ──
+window.state = {
+  patients: [],
+  currentPatient: null,
+  currentDay: 1,
+  answers: {},
+  selectedDoctorPatient: null,
+  doctorResponses: [],
+};
+
+// ── QLQ-C30 Questions ──
+const Q4 = [
+  {id:1,text:"¿Tiene dificultad para hacer actividades que requieren esfuerzo, como cargar una bolsa pesada o una valija?"},
+  {id:2,text:"¿Tiene dificultad para caminar largas distancias?"},
+  {id:3,text:"¿Tiene dificultad para dar paseos cortos fuera de su casa?"},
+  {id:4,text:"¿Necesita quedarse en cama o en una silla durante el día?"},
+  {id:5,text:"¿Necesita ayuda para comer, vestirse, lavarse o ir al baño?"},
+  {id:6,text:"¿Se ha sentido limitado/a para hacer su trabajo u otras actividades cotidianas?"},
+  {id:7,text:"¿Se ha sentido limitado/a para realizar sus actividades de ocio o de tiempo libre?"},
+  {id:8,text:"¿Tuvo falta de aire?"},
+  {id:9,text:"¿Tuvo dolor?"},
+  {id:10,text:"¿Necesitó descansar?"},
+  {id:11,text:"¿Tuvo dificultades para dormir?"},
+  {id:12,text:"¿Se sintió débil?"},
+  {id:13,text:"¿Tuvo falta de apetito?"},
+  {id:14,text:"¿Tuvo náuseas?"},
+  {id:15,text:"¿Vomitó?"},
+  {id:16,text:"¿Estuvo estreñido/a?"},
+  {id:17,text:"¿Tuvo diarrea?"},
+  {id:18,text:"¿Estuvo cansado/a?"},
+  {id:19,text:"¿El dolor interfirió con sus actividades diarias?"},
+  {id:20,text:"¿Tuvo dificultad para concentrarse, como leer el diario o ver televisión?"},
+  {id:21,text:"¿Se sintió tenso/a?"},
+  {id:22,text:"¿Se preocupó?"},
+  {id:23,text:"¿Se sintió irritable?"},
+  {id:24,text:"¿Se sintió deprimido/a?"},
+  {id:25,text:"¿Tuvo dificultades para recordar cosas?"},
+  {id:26,text:"¿Su estado físico o tratamiento médico interfirió con su vida familiar?"},
+  {id:27,text:"¿Su estado físico o tratamiento médico interfirió con sus actividades sociales?"},
+  {id:28,text:"¿Su estado físico o tratamiento médico le causó dificultades económicas?"},
+];
+const Q7 = [
+  {id:29,text:"¿Cómo calificaría su salud en general durante la semana pasada?"},
+  {id:30,text:"¿Cómo calificaría su calidad de vida en general durante la semana pasada?"},
+];
+const OPT4 = ["En absoluto","Un poco","Bastante","Mucho"];
+const OPT7 = ["1 — Pésima","2","3","4","5","6","7 — Óptima"];
+
+const SCALES = {
+  "Funcionamiento físico":    {items:[1,2,3,4,5],   hb:true,  type:"fn"},
+  "Rol funcional":            {items:[6,7],          hb:true,  type:"fn"},
+  "Funcionamiento emocional": {items:[21,22,23,24],  hb:true,  type:"fn"},
+  "Funcionamiento cognitivo": {items:[20,25],        hb:true,  type:"fn"},
+  "Funcionamiento social":    {items:[26,27],        hb:true,  type:"fn"},
+  "Calidad de vida global":   {items:[29,30],        hb:true,  type:"gl"},
+  "Fatiga":                   {items:[10,12,18],     hb:false, type:"sy"},
+  "Náuseas/Vómitos":          {items:[14,15],        hb:false, type:"sy"},
+  "Dolor":                    {items:[9,19],         hb:false, type:"sy"},
+  "Disnea":                   {items:[8],            hb:false, type:"sy"},
+  "Insomnio":                 {items:[11],           hb:false, type:"sy"},
+  "Pérdida de apetito":       {items:[13],           hb:false, type:"sy"},
+  "Estreñimiento":            {items:[16],           hb:false, type:"sy"},
+  "Diarrea":                  {items:[17],           hb:false, type:"sy"},
+  "Dificultad económica":     {items:[28],           hb:false, type:"sy"},
+};
+
+function computeScales(answers) {
+  const result = {};
+  for (const [name, scale] of Object.entries(SCALES)) {
+    const vals = scale.items.map(id => answers[id]!=null ? answers[id]+1 : null).filter(v=>v!=null);
+    if (!vals.length){result[name]=null;continue;}
+    const range = scale.type==="gl" ? 6 : 3;
+    const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+    const score = scale.hb
+      ? (scale.type==="gl" ? ((avg-1)/range)*100 : (1-(avg-1)/range)*100)
+      : ((avg-1)/range)*100;
+    result[name] = Math.round(score);
+  }
+  return result;
+}
+
+// ── Firebase ops ──
+async function fbGetPatients() {
+  const snap = await getDocs(collection(db,"patients"));
+  return snap.docs.map(d=>d.data());
+}
+async function fbAddPatient(p) {
+  await setDoc(doc(db,"patients",p.id),p);
+}
+async function fbTodayAnswered(patientId,day) {
+  const snap = await getDoc(doc(db,"responses",`${patientId}_day${day}`));
+  return snap.exists();
+}
+async function fbSaveResponse(patientId,day,answers,scores) {
+  await setDoc(doc(db,"responses",`${patientId}_day${day}`),{
+    patientId,day,answers,scores,date:new Date().toISOString()
+  });
+}
+async function fbGetResponses(patientId) {
+  const q = query(collection(db,"responses"),where("patientId","==",patientId));
+  const snap = await getDocs(q);
+  return snap.docs.map(d=>d.data()).sort((a,b)=>a.day-b.day);
+}
+
+// ── Screen management ──
+window.showScreen = function(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+};
+
+// ── Init ──
+async function init() {
+  // Check URL params (QR link)
+  const params = new URLSearchParams(window.location.search);
+  const pid = params.get("patient");
+  const pname = params.get("name");
+  const pstart = params.get("start");
+  if (pid && pname && pstart) {
+    window.state.currentPatient = {id:pid, name:decodeURIComponent(pname), startDate:decodeURIComponent(pstart)};
+    await initPatientFlow();
+    return;
+  }
+  // Load patients for home screen
+  const patients = await fbGetPatients();
+  window.state.patients = patients;
+  const sel = document.getElementById("home-patient-select");
+  patients.forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = p.name;
+    sel.appendChild(opt);
+  });
+  showScreen("screen-home");
+}
+
+// ── Patient flow ──
+async function initPatientFlow() {
+  const p = window.state.currentPatient;
+  const start = new Date(p.startDate);
+  const today = new Date();
+  const day = Math.max(1, Math.min(180, Math.floor((today-start)/86400000)+1));
+  window.state.currentDay = day;
+  const done = await fbTodayAnswered(p.id, day);
+  if (done) {
+    document.getElementById("already-day").textContent = `Volvé mañana para continuar. Día ${day} de 180.`;
+    showScreen("screen-already");
+  } else {
+    document.getElementById("intro-name").textContent = `Hola, ${p.name}`;
+    document.getElementById("intro-day").textContent = `Día ${day} de 180`;
+    buildSurvey();
+    showScreen("screen-patient-intro");
+  }
+}
+
+window.startPatient = async function() {
+  const sel = document.getElementById("home-patient-select");
+  const pid = sel.value;
+  if (!pid) { document.getElementById("home-error").style.display="block"; return; }
+  const p = window.state.patients.find(x=>x.id===pid);
+  window.state.currentPatient = p;
+  await initPatientFlow();
+};
+
+// ── Survey ──
+function buildSurvey() {
+  window.state.answers = {};
+  const container = document.getElementById("questions-container");
+  container.innerHTML = "";
+  const day = window.state.currentDay;
+  document.getElementById("survey-day-label").textContent = `Día ${day} / 180`;
+  updateProgress();
+
+  [...Q4,...Q7].forEach((q,i) => {
+    const opts = q.id <= 28 ? OPT4 : OPT7;
+    const isCompact = q.id >= 29;
+    const card = document.createElement("div");
+    card.style.cssText = "background:#fff;border-radius:14px;padding:14px 12px;margin-bottom:12px;border:1px solid #DDD8CF;box-shadow:0 1px 4px rgba(0,0,0,0.05);";
+    card.innerHTML = `
+      <p style="color:#8A9490;font-size:11px;margin-bottom:4px;font-family:monospace;">${i+1}.</p>
+      <p style="color:#1A1A1A;font-size:15px;line-height:1.5;margin-bottom:12px;">${q.text}</p>
+      <div style="display:grid;grid-template-columns:${isCompact?'repeat(7,1fr)':'repeat(2,1fr)'};gap:7px;" id="opts-${q.id}"></div>
+    `;
+    container.appendChild(card);
+    if (i === Q4.length - 1) {
+      const div = document.createElement("div");
+      div.style.cssText = "margin:24px 0 18px;text-align:center;";
+      div.innerHTML = `<p style="color:#8A9490;font-size:13px;">Para las siguientes preguntas, calificá del 1 (pésima) al 7 (óptima)</p>`;
+      container.appendChild(div);
+    }
+    opts.forEach((opt,j) => {
+      const btn = document.createElement("button");
+      btn.id = `btn-${q.id}-${j}`;
+      btn.textContent = opt;
+      btn.style.cssText = `background:#F5F2EC;color:#1A1A1A;border:1.5px solid #DDD8CF;border-radius:9px;padding:${isCompact?'9px 3px':'10px 7px'};font-size:${isCompact?11:13}px;font-family:inherit;line-height:1.3;text-align:center;transition:all 0.15s;`;
+      btn.onclick = () => selectAnswer(q.id, j, opts.length);
+      document.getElementById(`opts-${q.id}`).appendChild(btn);
+    });
+  });
+}
+
+function selectAnswer(qid, val, total) {
+  window.state.answers[qid] = val;
+  for (let i=0;i<total;i++) {
+    const btn = document.getElementById(`btn-${qid}-${i}`);
+    if (!btn) continue;
+    btn.style.background = i===val ? "#1B4D3E" : "#F5F2EC";
+    btn.style.color = i===val ? "#fff" : "#1A1A1A";
+    btn.style.borderColor = i===val ? "#1B4D3E" : "#DDD8CF";
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = 30;
+  const count = Object.keys(window.state.answers).length;
+  const pct = (count/total)*100;
+  document.getElementById("survey-progress-bar").style.width = pct+"%";
+  document.getElementById("survey-progress-label").textContent = `${count}/30`;
+  const btn = document.getElementById("submit-btn");
+  if (count === total) {
+    btn.disabled = false;
+    btn.style.background = "#1B4D3E";
+    btn.style.color = "#fff";
+    btn.textContent = "Enviar respuestas ✓";
+  } else {
+    btn.disabled = true;
+    btn.style.background = "#DDD8CF";
+    btn.style.color = "#8A9490";
+    btn.textContent = `Faltan ${total-count} preguntas`;
+  }
+}
+
+window.submitSurvey = async function() {
+  const btn = document.getElementById("submit-btn");
+  btn.disabled = true;
+  btn.textContent = "Guardando…";
+  const {currentPatient:p, currentDay:day, answers} = window.state;
+  const scores = computeScales(answers);
+  await fbSaveResponse(p.id, day, answers, scores);
+  document.getElementById("done-name").textContent = `¡Gracias, ${p.name}!`;
+  document.getElementById("done-progress").innerHTML = `${day}<span style="font-size:15px;color:#A8C5BC"> / 180</span>`;
+  showScreen("screen-done");
+};
+
+// ── Doctor panel ──
+window.checkDoctorPw = function() {
+  const pw = document.getElementById("doctor-pw").value;
+  if (pw === "estudio2024") {
+    loadDoctorPanel();
+  } else {
+    document.getElementById("doctor-pw-err").style.display="block";
+  }
+};
+
+async function loadDoctorPanel() {
+  showScreen("screen-doctor");
+  const patients = await fbGetPatients();
+  window.state.patients = patients;
+  renderPatientList(patients);
+}
+
+function renderPatientList(patients) {
+  const list = document.getElementById("patient-list");
+  list.innerHTML = "";
+  if (!patients.length) {
+    list.innerHTML = `<p style="color:#5A8A78;font-size:13px;">Sin pacientes aún</p>`;
+    return;
+  }
+  patients.forEach(p => {
+    const row = document.createElement("div");
+    row.style.cssText = "margin-bottom:2px;";
+    row.innerHTML = `
+      <div onclick="selectDoctorPatient('${p.id}')" id="prow-${p.id}" style="padding:9px 11px;border-radius:8px;cursor:pointer;color:#C8DDD5;font-size:14px;display:flex;justify-content:space-between;align-items:center;transition:all 0.15s;">
+        <span>🧑 ${p.name}</span>
+        <span onclick="event.stopPropagation();toggleQR('${p.id}')" style="font-size:16px;opacity:0.7;" title="Ver QR">📲</span>
+      </div>
+      <div id="qr-${p.id}" style="display:none;background:#1A2920;border-radius:10px;padding:14px;margin:4px 0 8px;text-align:center;border:1px solid #2A3D34;">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(getPatientURL(p))}&bgcolor=1B4D3E&color=ffffff&qzone=2" width="140" height="140" style="border-radius:10px;" alt="QR"/>
+        <p style="color:#5A8A78;font-size:11px;margin-top:8px;">Escaneá para abrir el cuestionario</p>
+        <p style="color:#C5703A;font-size:12px;margin-top:4px;font-weight:bold;">${p.name}</p>
+        <button onclick="copyLink('${p.id}')" style="margin-top:8px;background:#1B4D3E;color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:12px;font-family:inherit;">📋 Copiar enlace</button>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function getPatientURL(p) {
+  const base = window.location.href.split("?")[0];
+  return `${base}?patient=${p.id}&name=${encodeURIComponent(p.name)}&start=${encodeURIComponent(p.startDate)}`;
+}
+
+window.toggleQR = function(pid) {
+  const el = document.getElementById(`qr-${pid}`);
+  el.style.display = el.style.display==="none" ? "block" : "none";
+};
+
+window.copyLink = function(pid) {
+  const p = window.state.patients.find(x=>x.id===pid);
+  navigator.clipboard.writeText(getPatientURL(p));
+  alert("Enlace copiado. Podés enviarlo por WhatsApp al paciente.");
+};
+
+window.addPatient = async function() {
+  const input = document.getElementById("new-patient-name");
+  const name = input.value.trim();
+  if (!name) return;
+  const p = {id:`pac_${Date.now()}`, name, startDate:new Date().toISOString()};
+  await fbAddPatient(p);
+  window.state.patients.push(p);
+  input.value = "";
+  renderPatientList(window.state.patients);
+};
+
+window.selectDoctorPatient = async function(pid) {
+  const p = window.state.patients.find(x=>x.id===pid);
+  window.state.selectedDoctorPatient = p;
+  // Highlight
+  document.querySelectorAll('[id^="prow-"]').forEach(r => r.style.background="transparent");
+  document.getElementById(`prow-${pid}`).style.background="#1B4D3E";
+  // Load responses
+  const main = document.getElementById("doctor-main");
+  main.innerHTML = `<p style="color:#5A8A78;text-align:center;margin-top:60px;">Cargando datos…</p>`;
+  const responses = await fbGetResponses(pid);
+  window.state.doctorResponses = responses;
+  renderDoctorMain(p, responses);
+};
+
+function renderDoctorMain(p, responses) {
+  const main = document.getElementById("doctor-main");
+  const last = responses.length ? responses[responses.length-1] : null;
+  const prev = responses.length > 1 ? responses[responses.length-2] : null;
+
+  // Alerts
+  const alerts = [];
+  if (responses.length >= 2 && last) {
+    const prev7 = responses.filter(r => r.day >= last.day-7 && r.day < last.day);
+    if (prev7.length) {
+      const first = prev7[0];
+      for (const [name,s] of Object.entries(SCALES)) {
+        const s1=first.scores?.[name], s2=last.scores?.[name];
+        if (s1==null||s2==null) continue;
+        const delta=s2-s1;
+        if (s.hb ? delta<-15 : delta>15) alerts.push({scale:name,delta:Math.abs(delta),dir:s.hb?"bajó":"subió",val:s2});
+      }
+    }
+  }
+
+  // Summary cards
+  const cardScales = ["Calidad de vida global","Funcionamiento físico","Fatiga"];
+  const cardsHTML = cardScales.map(s => {
+    const v = last?.scores?.[s];
+    const pv = prev?.scores?.[s];
+    const delta = v!=null&&pv!=null ? v-pv : null;
+    const hb = SCALES[s]?.hb;
+    const good = delta===null?null:(hb?delta>=0:delta<=0);
+    const deltaHTML = delta!==null ? `<p style="color:${good?'#1E8449':'#B03A2E'};font-size:12px;margin-top:3px;">${delta>0?"▲":"▼"} ${Math.abs(delta)} vs anterior</p>` : "";
+    return `<div style="background:#1A2920;border-radius:12px;padding:13px 11px;border:1px solid #2A3D34;">
+      <p style="color:#5A8A78;font-size:10px;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.7px;">${s}</p>
+      <p style="color:#fff;font-size:26px;">${v??"-"}<span style="font-size:12px;color:#5A8A78;">/100</span></p>
+      ${deltaHTML}
+    </div>`;
+  }).join("");
+
+  // Scale buttons
+  const scaleColors = {fn:"#3A8A6A",sy:"#C5703A",gl:"#4A7ABD"};
+  const scaleBtns = Object.entries(SCALES).map(([name,s]) =>
+    `<button onclick="renderChart('${name.replace(/'/g,"\\'")}','${p.id}')" id="scalebtn-${name.replace(/[^a-z]/gi,'')}" style="background:#1A2920;color:#5A8A78;border:none;border-radius:20px;padding:5px 11px;font-size:11px;font-family:inherit;">${name}</button>`
+  ).join("");
+
+  // Alerts HTML
+  const alertsHTML = alerts.length === 0
+    ? `<div style="background:#1A2920;border-radius:12px;padding:20px;text-align:center;border:1px solid #2A3D34;"><p style="color:#1E8449;font-size:15px;">✓ Sin alertas clínicas en los últimos 7 días</p></div>`
+    : alerts.map(a=>`<div style="background:#2D1010;border:1px solid #6A1A1A;border-radius:12px;padding:16px;margin-bottom:10px;"><p style="color:#FF9090;font-size:15px;margin-bottom:4px;">⚠️ ${a.scale}</p><p style="color:#FFBBBB;font-size:13px;">${a.dir} ${a.delta} puntos en 7 días · Valor actual: <strong>${a.val}/100</strong></p></div>`).join("");
+
+  main.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-size:22px;font-weight:normal;">${p.name}</h2>
+        <p style="color:#5A8A78;font-size:13px;margin-top:4px;">${responses.length} / 180 días completados · Inicio: ${new Date(p.startDate).toLocaleDateString("es-AR")}</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        ${alerts.length ? `<div style="background:#2D1010;border:1px solid #6A1A1A;border-radius:10px;padding:7px 13px;"><span style="color:#FF7070;font-size:13px;">⚠️ ${alerts.length} alerta${alerts.length>1?"s":""}</span></div>` : ""}
+        <button onclick="toggleQR('${p.id}_main');document.getElementById('qr-main-container').style.display=document.getElementById('qr-main-container').style.display==='none'?'flex':'none'" style="background:#1A2920;color:#C8DDD5;border:1px solid #2A3D34;border-radius:9px;padding:7px 14px;font-size:13px;font-family:inherit;">📲 QR</button>
+      </div>
+    </div>
+    <div id="qr-main-container" style="display:none;background:#1A2920;border-radius:14px;padding:20px;margin-bottom:18px;border:1px solid #2A3D34;align-items:center;gap:20px;flex-wrap:wrap;">
+      <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(getPatientURL(p))}&bgcolor=1B4D3E&color=ffffff&qzone=2" width="160" height="160" style="border-radius:10px;" alt="QR"/>
+      <div>
+        <p style="font-size:15px;margin-bottom:6px;">QR para ${p.name}</p>
+        <p style="color:#5A8A78;font-size:13px;margin-bottom:14px;max-width:280px;">El paciente escanea este código con la cámara del celular y accede a su cuestionario.</p>
+        <button onclick="copyLink('${p.id}')" style="background:#1B4D3E;color:#fff;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-family:inherit;">📋 Copiar enlace</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:20px;">${cardsHTML}</div>
+    
+    <!-- Tabs -->
+    <div style="display:flex;gap:4px;margin-bottom:18px;">
+      <button onclick="switchTab('tab-graficos','tab-alertas','tab-exportar',this,arguments[0])" id="tab-graficos-btn" style="background:#1B4D3E;color:#fff;border:none;border-radius:8px;padding:8px 15px;font-size:13px;font-family:inherit;">📈 Gráficos</button>
+      <button onclick="switchTab('tab-alertas','tab-graficos','tab-exportar',this,arguments[0])" id="tab-alertas-btn" style="background:#1A2920;color:#5A8A78;border:none;border-radius:8px;padding:8px 15px;font-size:13px;font-family:inherit;">⚠️ Alertas</button>
+      <button onclick="switchTab('tab-exportar','tab-graficos','tab-alertas',this,arguments[0])" id="tab-exportar-btn" style="background:#1A2920;color:#5A8A78;border:none;border-radius:8px;padding:8px 15px;font-size:13px;font-family:inherit;">📥 Exportar</button>
+    </div>
+
+    <!-- Tab Graficos -->
+    <div id="tab-graficos">
+      <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;">${scaleBtns}</div>
+      <div style="background:#1A2920;border-radius:14px;padding:18px;border:1px solid #2A3D34;">
+        <p id="chart-title" style="color:#C8DDD5;font-size:13px;margin-bottom:14px;">Seleccioná una escala para ver el gráfico</p>
+        <canvas id="myChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <!-- Tab Alertas -->
+    <div id="tab-alertas" style="display:none;">${alertsHTML}</div>
+
+    <!-- Tab Exportar -->
+    <div id="tab-exportar" style="display:none;">
+      <div style="background:#1A2920;border-radius:14px;padding:22px;border:1px solid #2A3D34;margin-bottom:14px;">
+        <h3 style="font-size:16px;font-weight:normal;margin-bottom:8px;">Exportar datos</h3>
+        <p style="color:#5A8A78;font-size:13px;margin-bottom:18px;">${responses.length} registros disponibles. CSV compatible con SPSS, R y Excel.</p>
+        <button onclick="exportCSV()" style="background:#1B4D3E;color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:15px;font-family:inherit;">⬇ Descargar CSV — ${p.name}</button>
+      </div>
+    </div>
+  `;
+
+  // Auto-select first scale
+  renderChart("Calidad de vida global", p.id);
+}
+
+window.switchTab = function(show, hide1, hide2, btn) {
+  document.getElementById(show).style.display="block";
+  document.getElementById(hide1).style.display="none";
+  document.getElementById(hide2).style.display="none";
+  [show,hide1,hide2].forEach(id => {
+    const b = document.getElementById(id+"-btn");
+    if (b) { b.style.background = id===show?"#1B4D3E":"#1A2920"; b.style.color = id===show?"#fff":"#5A8A78"; }
+  });
+};
+
+window.renderChart = function(scaleName) {
+  const responses = window.state.doctorResponses;
+  const data = responses.map(r=>({day:r.day, val:r.scores?.[scaleName]})).filter(d=>d.val!=null);
+  document.getElementById("chart-title").textContent = `${scaleName} — ${SCALES[scaleName]?.hb?"Mayor = mejor":"Menor = mejor"}`;
+
+  // Highlight active button
+  Object.keys(SCALES).forEach(name => {
+    const btn = document.getElementById("scalebtn-"+name.replace(/[^a-z]/gi,''));
+    if (btn) { btn.style.background = name===scaleName?"#C5703A":"#1A2920"; btn.style.color = name===scaleName?"#fff":"#5A8A78"; }
+  });
+
+  const canvas = document.getElementById("myChart");
+  if (!canvas) return;
+  // Clear previous chart
+  if (window._chart) window._chart.destroy();
+
+  if (data.length < 2) {
+    canvas.style.display="none";
+    document.getElementById("chart-title").textContent += " — (se necesitan al menos 2 días de datos)";
+    return;
+  }
+  canvas.style.display="block";
+
+  // Use Chart.js from CDN
+  const Chart = window.Chart;
+  if (!Chart) return;
+  window._chart = new Chart(canvas, {
+    type: "line",
+    data: {
+      labels: data.map(d=>`Día ${d.day}`),
+      datasets: [{
+        data: data.map(d=>d.val),
+        borderColor: "#C5703A",
+        backgroundColor: "rgba(197,112,58,0.1)",
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: "#C5703A",
+        tension: 0.3,
+        fill: true,
+      }]
+    },
+    options: {
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y}/100`}}},
+      scales:{
+        y:{min:0,max:100,grid:{color:"#2A3D34"},ticks:{color:"#5A8A78"}},
+        x:{grid:{color:"#2A3D34"},ticks:{color:"#5A8A78",maxTicksLimit:10}},
+      }
+    }
+  });
+};
+
+window.exportCSV = function() {
+  const responses = window.state.doctorResponses;
+  const p = window.state.selectedDoctorPatient;
+  if (!responses.length) return;
+  const scales = Object.keys(SCALES);
+  const header = ["Día","Fecha",...scales].join(",");
+  const rows = responses.map(r=>[
+    r.day,
+    r.date ? new Date(r.date).toLocaleDateString("es-AR") : "",
+    ...scales.map(s=>r.scores?.[s]??""),
+  ].join(","));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([[header,...rows].join("\n")],{type:"text/csv"}));
+  a.download = `${p?.name??'paciente'}_QLQ-C30.csv`;
+  a.click();
+};
+
+// Load Chart.js then init
+const chartScript = document.createElement("script");
+chartScript.src = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js";
+chartScript.onload = () => init();
+document.head.appendChild(chartScript);
+
+</script>
+</body>
+</html>
