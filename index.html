@@ -127,92 +127,164 @@
     <p id="done-progress" style="color:#fff;font-size:36px;margin-top:4px;font-weight:bold;"></p>
   </div>
 </div>
-<!-- SCREEN: DOCTOR LOGIN -->
-<div id="screen-doctor-login" class="screen" style="min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:28px;background:#111C18;">
-  <div style="width:60px;height:60px;border-radius:50%;background:#C5703A;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:20px;">🔒</div>
-  <h2 style="color:#fff;font-size:22px;font-weight:normal;margin-bottom:6px;">Panel Médico</h2>
-  <p style="color:#5A8A78;font-size:14px;margin-bottom:28px;">QLQ-C30 · Seguimiento oncológico</p>
-  <input id="doctor-pw" type="password" placeholder="Contraseña" style="width:240px;background:#1A2920;border:1px solid #2A3D34;border-radius:10px;padding:12px 14px;color:#fff;font-size:15px;margin-bottom:10px;text-align:center;outline:none;" onkeydown="if(event.key==='Enter')checkDoctorPw()"/>
-  <p id="doctor-pw-err" style="color:#E07070;font-size:13px;margin-bottom:10px;display:none;">Contraseña incorrecta</p>
-  <button onclick="checkDoctorPw()" style="background:#1B4D3E;color:#fff;border:none;border-radius:10px;padding:12px 32px;font-size:15px;">Ingresar →</button>
-  <p style="color:#3A6A5A;font-size:12px;margin-top:20px;">Contraseña: <span style="color:#A8C5BC;">estudio2024</span></p>
-  <button onclick="showScreen('screen-home')" style="background:transparent;color:#5A8A78;border:none;font-size:13px;margin-top:16px;">← Volver</button>
-</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-<!-- SCREEN: DOCTOR DASHBOARD -->
-<div id="screen-doctor" class="screen" style="min-height:100vh;flex-direction:column;background:#111C18;color:#fff;">
-  <div style="background:#0E1812;padding:16px 22px;border-bottom:1px solid #2A3D34;display:flex;justify-content:space-between;align-items:center;">
-    <div>
-      <h1 style="font-size:18px;font-weight:normal;">Panel Médico — QLQ-C30</h1>
-      <p style="color:#5A8A78;font-size:12px;margin-top:2px;">Seguimiento oncológico · Firebase</p>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <span style="background:#1A2920;border-radius:8px;padding:6px 12px;font-size:12px;color:#5A8A78;">🟢 Conectado</span>
-      <button onclick="showScreen('screen-home')" style="background:transparent;color:#5A8A78;border:1px solid #2A3D34;border-radius:8px;padding:6px 12px;font-size:12px;">Salir</button>
-    </div>
-  </div>
-  <div style="display:flex;flex:1;min-height:calc(100vh - 60px);">
-    <div style="width:220px;background:#0E1812;border-right:1px solid #2A3D34;padding:14px;overflow-y:auto;flex-shrink:0;">
-      <p style="color:#5A8A78;font-size:11px;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">Pacientes</p>
-      <div id="patient-list"></div>
-      <div style="margin-top:20px;border-top:1px solid #2A3D34;padding-top:14px;">
-        <input id="new-patient-name" placeholder="Nombre del paciente…" style="width:100%;background:#1A2920;border:1px solid #2A3D34;border-radius:8px;padding:8px 10px;color:#fff;font-size:13px;outline:none;" onkeydown="if(event.key==='Enter')addPatient()"/>
-        <button onclick="addPatient()" style="width:100%;margin-top:7px;background:#C5703A;border:none;border-radius:8px;padding:9px;color:#fff;font-size:13px;">+ Agregar paciente</button>
-      </div>
-    </div>
-    <div id="doctor-main" style="flex:1;overflow-y:auto;padding:22px;">
-      <div style="display:flex;align-items:center;justify-content:center;height:200px;color:#5A8A78;font-size:15px;">← Seleccioná un paciente</div>
-    </div>
-  </div>
-</div>
+const firebaseConfig = {
+  apiKey: "AIzaSyDCTxy0b4qxWfMgZj-4-iRfrV97jJGvhAc",
+  authDomain: "qlq-c30-estudio.firebaseapp.com",
+  projectId: "qlq-c30-estudio",
+  storageBucket: "qlq-c30-estudio.firebasestorage.app",
+  messagingSenderId: "1009478054310",
+  appId: "1:1009478054310:web:267bc3367dd2ed0b5d5f67"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-<!-- SCREEN: PATIENT INTRO -->
-<div id="screen-patient-intro" class="screen" style="min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:28px;background:#1B4D3E;">
-  <div style="width:68px;height:68px;border-radius:50%;background:#C5703A;display:flex;align-items:center;justify-content:center;font-size:30px;margin-bottom:20px;">🌿</div>
-  <h1 id="intro-name" style="color:#fff;font-size:24px;text-align:center;font-weight:normal;margin-bottom:6px;"></h1>
-  <p style="color:#A8C5BC;font-size:14px;text-align:center;margin-bottom:4px;">Cuestionario de calidad de vida</p>
-  <p id="intro-day" style="color:#A8C5BC;font-size:13px;text-align:center;margin-bottom:32px;"></p>
-  <div style="background:rgba(255,255,255,0.08);border-radius:14px;padding:18px;margin-bottom:32px;max-width:320px;">
-    <p style="color:#fff;font-size:14px;line-height:1.7;">Este cuestionario tiene <strong>30 preguntas</strong> sobre cómo te sentiste durante la <strong>semana pasada</strong>. Toma entre 5 y 8 minutos. No hay respuestas correctas ni incorrectas.</p>
-  </div>
-  <button onclick="showScreen('screen-survey')" style="background:#C5703A;color:#fff;border:none;border-radius:12px;padding:14px 44px;font-size:16px;">Comenzar →</button>
-</div>
+window.state = { patients:[], currentPatient:null, currentDay:1, answers:{}, selectedDoctorPatient:null, doctorResponses:[] };
 
-<!-- SCREEN: ALREADY DONE -->
-<div id="screen-already" class="screen" style="min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:28px;background:#F5F2EC;">
-  <div style="font-size:52px;margin-bottom:16px;">✅</div>
-  <h2 style="color:#1B4D3E;font-size:22px;text-align:center;margin-bottom:8px;">Ya completaste el cuestionario de hoy</h2>
-  <p id="already-day" style="color:#8A9490;text-align:center;font-size:15px;">Volvé mañana para continuar.</p>
-</div>
+const Q4 = [
+  {id:1,text:"¿Tiene dificultad para hacer actividades que requieren esfuerzo, como cargar una bolsa pesada o una valija?"},
+  {id:2,text:"¿Tiene dificultad para caminar largas distancias?"},
+  {id:3,text:"¿Tiene dificultad para dar paseos cortos fuera de su casa?"},
+  {id:4,text:"¿Necesita quedarse en cama o en una silla durante el día?"},
+  {id:5,text:"¿Necesita ayuda para comer, vestirse, lavarse o ir al baño?"},
+  {id:6,text:"¿Se ha sentido limitado/a para hacer su trabajo u otras actividades cotidianas?"},
+  {id:7,text:"¿Se ha sentido limitado/a para realizar sus actividades de ocio o de tiempo libre?"},
+  {id:8,text:"¿Tuvo falta de aire?"},
+  {id:9,text:"¿Tuvo dolor?"},
+  {id:10,text:"¿Necesitó descansar?"},
+  {id:11,text:"¿Tuvo dificultades para dormir?"},
+  {id:12,text:"¿Se sintió débil?"},
+  {id:13,text:"¿Tuvo falta de apetito?"},
+  {id:14,text:"¿Tuvo náuseas?"},
+  {id:15,text:"¿Vomitó?"},
+  {id:16,text:"¿Estuvo estreñido/a?"},
+  {id:17,text:"¿Tuvo diarrea?"},
+  {id:18,text:"¿Estuvo cansado/a?"},
+  {id:19,text:"¿El dolor interfirió con sus actividades diarias?"},
+  {id:20,text:"¿Tuvo dificultad para concentrarse, como leer el diario o ver televisión?"},
+  {id:21,text:"¿Se sintió tenso/a?"},
+  {id:22,text:"¿Se preocupó?"},
+  {id:23,text:"¿Se sintió irritable?"},
+  {id:24,text:"¿Se sintió deprimido/a?"},
+  {id:25,text:"¿Tuvo dificultades para recordar cosas?"},
+  {id:26,text:"¿Su estado físico o tratamiento médico interfirió con su vida familiar?"},
+  {id:27,text:"¿Su estado físico o tratamiento médico interfirió con sus actividades sociales?"},
+  {id:28,text:"¿Su estado físico o tratamiento médico le causó dificultades económicas?"},
+];
+const Q7 = [
+  {id:29,text:"¿Cómo calificaría su salud en general durante la semana pasada?"},
+  {id:30,text:"¿Cómo calificaría su calidad de vida en general durante la semana pasada?"},
+];
+const OPT4 = ["En absoluto","Un poco","Bastante","Mucho"];
+const OPT7 = ["1 — Pésima","2","3","4","5","6","7 — Óptima"];
 
-<!-- SCREEN: SURVEY -->
-<div id="screen-survey" class="screen" style="min-height:100vh;flex-direction:column;background:#F5F2EC;">
-  <div style="background:#1B4D3E;padding:14px 18px 10px;position:sticky;top:0;z-index:10;">
-    <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-      <span id="survey-day-label" style="color:#A8C5BC;font-size:13px;"></span>
-      <span id="survey-progress-label" style="color:#fff;font-size:13px;"></span>
-    </div>
-    <div style="background:rgba(255,255,255,0.15);border-radius:99px;height:5px;">
-      <div id="survey-progress-bar" style="background:#C5703A;width:0%;height:100%;border-radius:99px;transition:width 0.3s;"></div>
-    </div>
-  </div>
-  <div style="padding:18px 14px;">
-    <p style="color:#8A9490;font-size:13px;text-align:center;margin-bottom:18px;">Durante la <strong>semana pasada</strong>…</p>
-    <div id="questions-container"></div>
-    <button id="submit-btn" onclick="submitSurvey()" disabled style="width:100%;margin-top:20px;background:#DDD8CF;color:#8A9490;border:none;border-radius:14px;padding:16px;font-size:17px;">Faltan preguntas por responder</button>
-  </div>
-</div>
+const SCALES = {
+  "Funcionamiento físico":    {items:[1,2,3,4,5],   hb:true,  type:"fn"},
+  "Rol funcional":            {items:[6,7],          hb:true,  type:"fn"},
+  "Funcionamiento emocional": {items:[21,22,23,24],  hb:true,  type:"fn"},
+  "Funcionamiento cognitivo": {items:[20,25],        hb:true,  type:"fn"},
+  "Funcionamiento social":    {items:[26,27],        hb:true,  type:"fn"},
+  "Calidad de vida global":   {items:[29,30],        hb:true,  type:"gl"},
+  "Fatiga":                   {items:[10,12,18],     hb:false, type:"sy"},
+  "Náuseas/Vómitos":          {items:[14,15],        hb:false, type:"sy"},
+  "Dolor":                    {items:[9,19],         hb:false, type:"sy"},
+  "Disnea":                   {items:[8],            hb:false, type:"sy"},
+  "Insomnio":                 {items:[11],           hb:false, type:"sy"},
+  "Pérdida de apetito":       {items:[13],           hb:false, type:"sy"},
+  "Estreñimiento":            {items:[16],           hb:false, type:"sy"},
+  "Diarrea":                  {items:[17],           hb:false, type:"sy"},
+  "Dificultad económica":     {items:[28],           hb:false, type:"sy"},
+};
 
-<!-- SCREEN: DONE -->
-<div id="screen-done" class="screen" style="min-height:100vh;align-items:center;justify-content:center;flex-direction:column;padding:28px;background:#1B4D3E;">
-  <div style="font-size:52px;margin-bottom:16px;">🌿</div>
-  <h2 id="done-name" style="color:#fff;font-size:22px;text-align:center;font-weight:normal;margin-bottom:8px;"></h2>
-  <p style="color:#A8C5BC;text-align:center;font-size:15px;margin-bottom:28px;">Tus respuestas fueron guardadas.</p>
-  <div style="background:rgba(255,255,255,0.1);border-radius:14px;padding:16px 32px;text-align:center;">
-    <p style="color:#A8C5BC;font-size:13px;">Progreso total</p>
-    <p id="done-progress" style="color:#fff;font-size:36px;margin-top:4px;font-weight:bold;"></p>
-  </div>
-</div>
+function computeScales(answers) {
+  const result = {};
+  for (const [name, scale] of Object.entries(SCALES)) {
+    const vals = scale.items.map(id => answers[id]!=null ? answers[id]+1 : null).filter(v=>v!=null);
+    if (!vals.length){result[name]=null;continue;}
+    const range = scale.type==="gl" ? 6 : 3;
+    const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+    const score = scale.hb
+      ? (scale.type==="gl" ? ((avg-1)/range)*100 : (1-(avg-1)/range)*100)
+      : ((avg-1)/range)*100;
+    result[name] = Math.round(score);
+  }
+  return result;
+}
+
+async function fbGetPatients() {
+  const snap = await getDocs(collection(db,"patients"));
+  return snap.docs.map(d=>d.data());
+}
+async function fbAddPatient(p) { await setDoc(doc(db,"patients",p.id),p); }
+async function fbTodayAnswered(patientId,day) {
+  const snap = await getDoc(doc(db,"responses",`${patientId}_day${day}`));
+  return snap.exists();
+}
+async function fbSaveResponse(patientId,day,answers,scores) {
+  await setDoc(doc(db,"responses",`${patientId}_day${day}`),{patientId,day,answers,scores,date:new Date().toISOString()});
+}
+async function fbGetResponses(patientId) {
+  const q = query(collection(db,"responses"),where("patientId","==",patientId));
+  const snap = await getDocs(q);
+  return snap.docs.map(d=>d.data()).sort((a,b)=>a.day-b.day);
+}
+
+window.showScreen = function(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+};
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const pid = params.get("patient");
+  const pname = params.get("name");
+  const pstart = params.get("start");
+  if (pid && pname && pstart) {
+    window.state.currentPatient = {id:pid, name:decodeURIComponent(pname), startDate:decodeURIComponent(pstart)};
+    await initPatientFlow();
+    return;
+  }
+  const patients = await fbGetPatients();
+  window.state.patients = patients;
+  const sel = document.getElementById("home-patient-select");
+  patients.forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p.id; opt.textContent = p.name;
+    sel.appendChild(opt);
+  });
+  showScreen("screen-home");
+}
+
+async function initPatientFlow() {
+  const p = window.state.currentPatient;
+  const start = new Date(p.startDate);
+  const today = new Date();
+  const day = Math.max(1, Math.min(180, Math.floor((today-start)/86400000)+1));
+  window.state.currentDay = day;
+  const done = await fbTodayAnswered(p.id, day);
+  if (done) {
+    document.getElementById("already-day").textContent = `Volvé mañana para continuar. Día ${day} de 180.`;
+    showScreen("screen-already");
+  } else {
+    document.getElementById("intro-name").textContent = `Hola, ${p.name}`;
+    document.getElementById("intro-day").textContent = `Día ${day} de 180`;
+    buildSurvey();
+    showScreen("screen-patient-intro");
+  }
+}
+
+window.startPatient = async function() {
+  const sel = document.getElementById("home-patient-select");
+  const pid = sel.value;
+  if (!pid) { document.getElementById("home-error").style.display="block"; return; }
+  const p = window.state.patients.find(x=>x.id===pid);
+  window.state.currentPatient = p;
+  await initPatientFlow();
+};
 function buildSurvey() {
   window.state.answers = {};
   const container = document.getElementById("questions-container");
